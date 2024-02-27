@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -7,8 +7,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1234@localhost:330
 db = SQLAlchemy(app)
 
 class Save(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    test = db.Column(db.String(255))
+    test = db.Column(db.String(255), primary_key=True)  # test 컬럼을 기본키로 사용
 
 @app.route('/')
 def index():
@@ -30,6 +29,15 @@ def submit():
 
         # 클라이언트에게 응답
         return 'Data received successfully'
+
+@app.route('/get_data', methods=['GET'])
+def get_data():
+    # 데이터베이스에서 모든 데이터 가져오기
+    data = Save.query.all()
+    
+    # 데이터를 JSON 형식으로 변환하여 반환
+    data_list = [{'test': entry.test} for entry in data]
+    return jsonify(data_list)
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5001, debug=True)
